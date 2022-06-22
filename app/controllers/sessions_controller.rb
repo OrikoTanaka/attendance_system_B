@@ -8,7 +8,7 @@ class SessionsController < ApplicationController
     if user && user.authenticate(params[:session][:password])
       log_in user
       params[:session][:remember_me] == '1' ? remember(user) : forget(user) # チェックボックスにチェックを入れる（記憶させる＝1）ならtrue、チェック無し（記憶させない＝０）ならfalse
-      redirect_to user
+      redirect_back_or user # ログイン前にアクセスしようとしたページへredirectする（フレンドリーフォワーディング機能）
     else
       flash.now[:danger] = '認証に失敗しました。'
       render :new

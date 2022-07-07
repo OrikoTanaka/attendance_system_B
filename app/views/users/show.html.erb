@@ -56,11 +56,7 @@
           <td><%= l(day.started_at, format: :minute) if day.started_at.present? %></td>
           <td class="col-sm-2">
             <% if btn_text = attendance_state(day) %>
-              <% if day.started_at.present? %>
-                <%= link_to "#{btn_text}出社", user_attendance_path(@user, day), method: :patch, class: "btn btn-primary btn-attendance" %>
-              <% else %>
-                <%= link_to "#{btn_text}退社", user_attendance_path(@user, day), method: :patch, class: "btn btn-primary btn-attendance" %>
-              <% end %>
+              <%= link_to "#{btn_text}", user_attendance_path(@user, day), method: :patch, class: "btn btn-primary btn-attendance" %>
             <% end %>
           </td>
           <td><%= l(day.finished_at, format: :hour) if day.finished_at.present? %></td>
@@ -72,7 +68,7 @@
               <% @total_working_times = @total_working_times.to_f + str_times.to_f %>
             <% end %>
           </td>
-          <td></td>
+          <td><%= day.note %></td>
         </tr>
       <% end %>
     </tbody>

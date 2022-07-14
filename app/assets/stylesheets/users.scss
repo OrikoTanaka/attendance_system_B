@@ -53,6 +53,15 @@
 
 /* ユーザー一覧ページ */
 
+#search {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.btn-search {
+  display:inline-block;
+}
+
 #table-users {
   td {
     vertical-align: middle;

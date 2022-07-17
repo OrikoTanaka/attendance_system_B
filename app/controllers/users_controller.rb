@@ -7,7 +7,7 @@ class UsersController < ApplicationController
    
   def index
     if params[:search].present?
-      @users = User.where('name LIKE ?', "%#{params[:search]}%").paginate(page: params[:page])
+      @users = User.where('name LIKE ?', "%#{params[:search]}%").paginate(page: params[:page]) # paginate内の処理なので、どちらの場合にもpaginateを指定しないといけない。
     else
       @users = User.paginate(page: params[:page])
     end

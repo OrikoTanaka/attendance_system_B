@@ -3,6 +3,7 @@ class AttendancesController < ApplicationController
   before_action :logged_in_user, only: [:update, :edit_one_month]
   before_action :admin_or_correct_user, only: [:update, :edit_one_month, :update_one_month]
   before_action :set_one_month, only: :edit_one_month
+  before_action :attendance.finished_at.blank?, only: :update_one_month
   
   UPDATE_ERROR_MSG = "勤怠登録に失敗しました。やり直してください。"
   
@@ -10,13 +11,13 @@ class AttendancesController < ApplicationController
     @user = User.find(params[:user_id])
     @attendance = Attendance.find(params[:id])
     if @attendance.started_at.nil?
-      if @attendance.update_attributes(started_at: Time.current.floor_to(15.minutes).change(sec: 0))
+      if @attendance.update_attributes(started_at: Time.current.change(sec: 0))
         flash[:info] = "おはようございます！"
       else
         flash[:danger] = UPDATE_ERROR_MSG
       end
     elsif @attendance.finished_at.nil?
-      if @attendance.update_attributes(finished_at: Time.current.floor_to(15.minutes).change(sec: 0))
+      if @attendance.update_attributes(finished_at: Time.current.change(sec: 0))
         flash[:info] = "お疲れ様でした。"
       else
         flash[:danger] = UPDATE_ERROR_MSG
@@ -50,12 +51,16 @@ class AttendancesController < ApplicationController
     
     # beforeフィルター
     
-    # 管理権限者、または現在ログインしているユーザーを許可します。
-    def admin_or_correct_user
-      @user = User.find(params[:user_id]) if @user.blank?
-      unless current_user?(@user) || current_user.admin?
-        flash[:danger] = "編集権限がありません。"
-        redirect_to(root_url)
+    # 勤怠編集更新には退勤時間も必要
+    def started_at_is_invalid_withiout_a_finished_at
+      errors.add(:finished_at, "が必要です") if started_at.present? && finished_at.blank?
+    end
+    
+    # 退勤時間がなければtrue、そうでなければfalseを返す
+    def attendance;finished_at.blank?
+      if attendance.params[:finished_at].nil?
+        flash[:danger] = "出勤時間と退勤時間の両方が必要です。"
+        redirect_to attendances_edit_one_month_user_url(date: params[:date])
       end
     end
 end

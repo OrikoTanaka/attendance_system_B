@@ -15,8 +15,8 @@
     <%= render 'layouts/header' %>
     <div class="container">
       <!-- フラッシュメッセージを表示させる -->
-      <% flash.each do |message_type, msg| %>-->
-        <div class="alert alert-<%= message_type %>"><%=  msg.html_safe %></div>
+      <% flash.each do |message_type, msg| %>
+        <div class="alert alert-<%= message_type %>"><%= msg.html_safe %></div>
       <% end %>
       <%= yield %>
       <!-- デバッグ情報の挿入-->

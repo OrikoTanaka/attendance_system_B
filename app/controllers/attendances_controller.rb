@@ -3,7 +3,6 @@ class AttendancesController < ApplicationController
   before_action :logged_in_user, only: [:update, :edit_one_month]
   before_action :admin_or_correct_user, only: [:update, :edit_one_month, :update_one_month]
   before_action :set_one_month, only: :edit_one_month
-  before_action :attendance.finished_at.blank?, only: :update_one_month
   
   UPDATE_ERROR_MSG = "勤怠登録に失敗しました。やり直してください。"
   
@@ -33,7 +32,8 @@ class AttendancesController < ApplicationController
     ActiveRecord::Base.transaction do # トランザクションを開始します
       attendances_params.each do |id, item|
         attendance = Attendance.find(id)
-        attendance.update_attributes!(item)
+        attendance.attributes = item #ここでオブジェクトのカラム全体を更新(この時点ではレコードに保存していない)
+        attendance.save!(context: :update_one_month) #ここで↑で更新した値をレコードに保存(同時にバリデーションを実行)
       end
     end
     flash[:success] = "１か月分の勤怠情報を更新しました。"
@@ -47,20 +47,5 @@ class AttendancesController < ApplicationController
     # １か月分の勤怠情報を扱います
     def attendances_params
       params.require(:user).permit(attendances: [:started_at, :finished_at, :note])[:attendances]
-    end
-    
-    # beforeフィルター
-    
-    # 勤怠編集更新には退勤時間も必要
-    def started_at_is_invalid_withiout_a_finished_at
-      errors.add(:finished_at, "が必要です") if started_at.present? && finished_at.blank?
-    end
-    
-    # 退勤時間がなければtrue、そうでなければfalseを返す
-    def attendance;finished_at.blank?
-      if attendance.params[:finished_at].nil?
-        flash[:danger] = "出勤時間と退勤時間の両方が必要です。"
-        redirect_to attendances_edit_one_month_user_url(date: params[:date])
-      end
     end
 end
